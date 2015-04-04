@@ -15,40 +15,32 @@ class ViewController: UIViewController {
    
     var userIsInTheMiddleOfTypingANumber = false
     
-    var numberHasSeparator = false
-    
     
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
-        println("digit = \(digit)")
-
-        
-        if userIsInTheMiddleOfTypingANumber {
-            display.text = display.text! + digit
-        } else {
-            display.text = digit
-            userIsInTheMiddleOfTypingANumber = true
-        }
-    }
-
-
-    @IBAction func appendSeparator(sender: UIButton) {
-        if !numberHasSeparator && userIsInTheMiddleOfTypingANumber {
-            let separator = sender.currentTitle!
-            display.text! += separator
-            numberHasSeparator = true
-        }
-    }
     
+        
+        //if the "digit" is in fact a separator, make sure the number doesn't already have one before appending it
+        if (digit != ".") || (digit == "." && display.text!.rangeOfString(".") == nil) {
+            if (userIsInTheMiddleOfTypingANumber) {
+                display.text = display.text! + digit //append
+            } else {
+                display.text = digit //number wasnt started, start with the digit
+                userIsInTheMiddleOfTypingANumber = true
+            }
+
+        }
+        
+    }
+
+
     
     var operandStack = Array<Double>()
     
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
         operandStack.append(displayValue)
-//        history.text = history.text! + display.text! + " "
         println("operandStack = \(operandStack)")
-        numberHasSeparator = false
     }
     
 
@@ -67,8 +59,6 @@ class ViewController: UIViewController {
     
     @IBAction func operate(sender: UIButton) {
         let operation = sender.currentTitle!
-        
-//        history.text = history.text! + operation + " "
         
         if (userIsInTheMiddleOfTypingANumber) {
             enter()
@@ -92,6 +82,12 @@ class ViewController: UIViewController {
         
     }
     
+    @IBAction func clearAll() {
+        history.text = " "
+        display.text = "0"
+        operandStack.removeAll(keepCapacity: false)
+        userIsInTheMiddleOfTypingANumber = false
+    }
     
     func performOperation(operation: (Double, Double) ->Double) {
         if operandStack.count >= 2 {
