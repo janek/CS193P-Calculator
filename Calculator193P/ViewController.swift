@@ -14,7 +14,7 @@ class ViewController: UIViewController {
    
     var userIsInTheMiddleOfTypingANumber = false
     
-    
+    var numberHasSeparator = false
     
     
     @IBAction func appendDigit(sender: UIButton) {
@@ -22,13 +22,25 @@ class ViewController: UIViewController {
         println("digit = \(digit)")
 
         
-        if (userIsInTheMiddleOfTypingANumber) {
+        if userIsInTheMiddleOfTypingANumber {
             display.text = display.text! + digit
         } else {
             display.text = digit
             userIsInTheMiddleOfTypingANumber = true
         }
     }
+
+
+    @IBAction func appendSeparator(sender: UIButton) {
+        if !numberHasSeparator {
+            let separator = sender.currentTitle!
+            display.text! += separator
+            numberHasSeparator = true
+        } else {
+            println("this number already has a separator")
+        }
+    }
+    
     
     var operandStack = Array<Double>()
     
