@@ -30,7 +30,7 @@ class ViewController: UIViewController {
     }
     
     
-    
+    //appends digits and/or the decimal separator
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
     
@@ -47,8 +47,6 @@ class ViewController: UIViewController {
         }
         
     }
-    
-
     
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
@@ -95,6 +93,16 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTypingANumber = false
     }
     
+    @IBAction func backspace() {
+        if userIsInTheMiddleOfTypingANumber {
+            if countElements(display.text!) > 1 {
+                display.text! = dropLast(display.text!)
+            } else {
+                display.text! = "0"
+                userIsInTheMiddleOfTypingANumber = false
+            }
+        }
+    }
     
     //for binary operations
     func performOperation(operation: (Double, Double) ->Double) {
