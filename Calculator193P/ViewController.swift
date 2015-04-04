@@ -56,7 +56,7 @@ class ViewController: UIViewController {
     
     @IBAction func operate(sender: UIButton) {
         let operation = sender.currentTitle!
-        
+        history.text! += "= "
         if (userIsInTheMiddleOfTypingANumber) {
             enter()
         }
@@ -83,7 +83,6 @@ class ViewController: UIViewController {
     
     @IBAction func buttonPressed(sender: UIButton) {
         history.text! += sender.currentTitle! + " "
-        
     }
     
     @IBAction func clearAll() {
@@ -103,6 +102,11 @@ class ViewController: UIViewController {
             }
         }
     }
+    
+    @IBAction func changeSign() {
+    }
+    
+    
     
     //for binary operations
     func performOperation(operation: (Double, Double) ->Double) {
