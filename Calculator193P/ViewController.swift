@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var display: UILabel!
+    @IBOutlet weak var history: UILabel!
    
     var userIsInTheMiddleOfTypingANumber = false
     
@@ -45,6 +46,7 @@ class ViewController: UIViewController {
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
         operandStack.append(displayValue)
+//        history.text = history.text! + display.text! + " "
         println("operandStack = \(operandStack)")
         numberHasSeparator = false
     }
@@ -65,6 +67,9 @@ class ViewController: UIViewController {
     
     @IBAction func operate(sender: UIButton) {
         let operation = sender.currentTitle!
+        
+//        history.text = history.text! + operation + " "
+        
         if (userIsInTheMiddleOfTypingANumber) {
             enter()
         }
@@ -79,6 +84,11 @@ class ViewController: UIViewController {
             case "√": performOperation {sqrt($0)}
             default: break
         }
+        
+    }
+    
+    @IBAction func buttonPressed(sender: UIButton) {
+        history.text! += sender.currentTitle! + " "
         
     }
     
