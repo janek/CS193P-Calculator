@@ -9,17 +9,19 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    
     @IBOutlet weak var display: UILabel!
     @IBOutlet weak var history: UILabel!
-   
+    
     var userIsInTheMiddleOfTypingANumber = false
     
     var operandStack = Array<Double>()
     
     var displayValue : Double {
         get {
-            return NSNumberFormatter().numberFromString(display.text!)!.doubleValue
+            let formatter = NSNumberFormatter()
+            formatter.decimalSeparator = "."
+            return formatter.numberFromString(display.text!)!.doubleValue
         }
         
         set {
@@ -33,17 +35,17 @@ class ViewController: UIViewController {
     //appends digits and/or the decimal separator
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
-    
-       
+        
+        
         if (digit != ".") || (digit == "." && display.text!.rangeOfString(".") == nil) {
-        //if the "digit" is actually a decimal separator, ^ make sure the number doesn't already have one before appending it
+            //if the "digit" is actually a decimal separator, ^ make sure the number doesn't already have one before appending it
             if (userIsInTheMiddleOfTypingANumber) {
                 display.text = display.text! + digit
             } else {
                 display.text = digit
                 userIsInTheMiddleOfTypingANumber = true
             }
-
+            
         }
         
     }
@@ -56,27 +58,37 @@ class ViewController: UIViewController {
     
     @IBAction func operate(sender: UIButton) {
         let operation = sender.currentTitle!
-        history.text! += "= "
+        if !(history.text!.hasSuffix("= ")) {
+            history.text! += "= "
+        }
+        
+        
+        //if user was typing a number, he isn't now - because he pressed an operation button
         if (userIsInTheMiddleOfTypingANumber) {
             enter()
         }
+        
+        
         switch operation {
+        
+        //binary operations
+        case "×": performOperation {$0 * $1}
+        case "÷": performOperation {$1 / $0}
+        case "+": performOperation {$0 + $1}
+        case "−": performOperation {$1 - $0}
             
-            //binary operations
-            case "×": performOperation {$0 * $1}
-            case "÷": performOperation {$1 / $0}
-            case "+": performOperation {$0 + $1}
-            case "−": performOperation {$1 - $0}
+        //unary operations
+        case "sin": performOperation {sin($0)}
+        case "cos": performOperation {cos($0)}
+        case "√": performOperation {sqrt($0)}
+        case "+/−": performOperation() {-$0}
             
-            //unary operations
-            case "sin": performOperation {sin($0)}
-            case "cos": performOperation {cos($0)}
-            case "√": performOperation {sqrt($0)}
             
-            //0-operand operations (eg. constants)
-            case "π": performOperation(M_PI)
+        //0-operand operations (eg. constants)
+        case "π": performOperation(M_PI)
             
-            default: break
+            
+        default: break
         }
         
     }
@@ -103,7 +115,19 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func changeSign() {
+    
+    @IBAction func changeSign(sender: UIButton) {
+        if userIsInTheMiddleOfTypingANumber {
+            if display.text!.hasPrefix("-") {
+                display.text!.removeAtIndex(display.text!.startIndex)
+            } else {
+                display.text! = "-"+display.text!
+            }
+            
+        } else {
+            operate(sender)
+        }
+        
     }
     
     
