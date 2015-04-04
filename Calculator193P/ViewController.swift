@@ -15,35 +15,8 @@ class ViewController: UIViewController {
    
     var userIsInTheMiddleOfTypingANumber = false
     
-    
-    @IBAction func appendDigit(sender: UIButton) {
-        let digit = sender.currentTitle!
-    
-        
-        //if the "digit" is in fact a separator, make sure the number doesn't already have one before appending it
-        if (digit != ".") || (digit == "." && display.text!.rangeOfString(".") == nil) {
-            if (userIsInTheMiddleOfTypingANumber) {
-                display.text = display.text! + digit //append
-            } else {
-                display.text = digit //number wasnt started, start with the digit
-                userIsInTheMiddleOfTypingANumber = true
-            }
-
-        }
-        
-    }
-
-
-    
     var operandStack = Array<Double>()
     
-    @IBAction func enter() {
-        userIsInTheMiddleOfTypingANumber = false
-        operandStack.append(displayValue)
-        println("operandStack = \(operandStack)")
-    }
-    
-
     var displayValue : Double {
         get {
             return NSNumberFormatter().numberFromString(display.text!)!.doubleValue
@@ -57,6 +30,32 @@ class ViewController: UIViewController {
     }
     
     
+    
+    @IBAction func appendDigit(sender: UIButton) {
+        let digit = sender.currentTitle!
+    
+       
+        if (digit != ".") || (digit == "." && display.text!.rangeOfString(".") == nil) {
+        //if the "digit" is actually a decimal separator, ^ make sure the number doesn't already have one before appending it
+            if (userIsInTheMiddleOfTypingANumber) {
+                display.text = display.text! + digit
+            } else {
+                display.text = digit
+                userIsInTheMiddleOfTypingANumber = true
+            }
+
+        }
+        
+    }
+    
+
+    
+    @IBAction func enter() {
+        userIsInTheMiddleOfTypingANumber = false
+        operandStack.append(displayValue)
+        println("operandStack = \(operandStack)")
+    }
+    
     @IBAction func operate(sender: UIButton) {
         let operation = sender.currentTitle!
         
@@ -64,14 +63,21 @@ class ViewController: UIViewController {
             enter()
         }
         switch operation {
+            
+            //binary operations
             case "×": performOperation {$0 * $1}
             case "÷": performOperation {$1 / $0}
             case "+": performOperation {$0 + $1}
             case "−": performOperation {$1 - $0}
+            
+            //unary operations
             case "sin": performOperation {sin($0)}
             case "cos": performOperation {cos($0)}
-            case "π": operandStack.append(M_PI)
             case "√": performOperation {sqrt($0)}
+            
+            //0-operand operations (eg. constants)
+            case "π": performOperation(M_PI)
+            
             default: break
         }
         
@@ -89,6 +95,8 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTypingANumber = false
     }
     
+    
+    //for binary operations
     func performOperation(operation: (Double, Double) ->Double) {
         if operandStack.count >= 2 {
             displayValue = operation(operandStack.removeLast(), operandStack.removeLast())
@@ -96,7 +104,7 @@ class ViewController: UIViewController {
         }
     }
     
-    
+    //for unary operations
     func performOperation(operation: (Double) ->Double) {
         if operandStack.count >= 1 {
             displayValue = operation(operandStack.removeLast())
@@ -104,6 +112,11 @@ class ViewController: UIViewController {
         }
     }
     
+    //for 0-operand operations (eg. constants)
+    func performOperation(constant: Double) {
+        operandStack.append(M_PI)
+        displayValue = M_PI
+    }
     
 }
 
