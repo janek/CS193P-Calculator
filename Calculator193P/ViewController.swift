@@ -17,16 +17,28 @@ class ViewController: UIViewController {
     
     var operandStack = Array<Double>()
     
-    var displayValue : Double {
+    var displayValue : Double? {
         get {
             let formatter = NSNumberFormatter()
             formatter.decimalSeparator = "."
-            return formatter.numberFromString(display.text!)!.doubleValue
+            
+            let numberFromString = formatter.numberFromString(display.text!)
+            if numberFromString == nil {
+                return nil
+            } else {
+                return numberFromString!.doubleValue
+            }
         }
         
         set {
-            display.text! = "\(newValue)"
-            userIsInTheMiddleOfTypingANumber = false
+            if newValue == nil {
+                display.text = ""
+            } else {
+                println("newval not nil")
+                display.text! = "\(newValue!)"
+                userIsInTheMiddleOfTypingANumber = false
+
+            }
         }
         
     }
@@ -52,7 +64,11 @@ class ViewController: UIViewController {
     
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
-        operandStack.append(displayValue)
+        
+        if (displayValue != nil){
+            operandStack.append(displayValue!)
+        }
+
         println("operandStack = \(operandStack)")
     }
     
