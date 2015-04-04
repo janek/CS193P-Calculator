@@ -32,12 +32,10 @@ class ViewController: UIViewController {
 
 
     @IBAction func appendSeparator(sender: UIButton) {
-        if !numberHasSeparator {
+        if !numberHasSeparator && userIsInTheMiddleOfTypingANumber {
             let separator = sender.currentTitle!
             display.text! += separator
             numberHasSeparator = true
-        } else {
-            println("this number already has a separator")
         }
     }
     
@@ -48,7 +46,7 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTypingANumber = false
         operandStack.append(displayValue)
         println("operandStack = \(operandStack)")
-        
+        numberHasSeparator = false
     }
     
 
