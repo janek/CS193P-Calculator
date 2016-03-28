@@ -34,7 +34,7 @@ class ViewController: UIViewController {
             if newValue == nil {
                 display.text = ""
             } else {
-                println("newval not nil")
+                print("newval not nil")
                 display.text! = "\(newValue!)"
                 userIsInTheMiddleOfTypingANumber = false
 
@@ -69,7 +69,7 @@ class ViewController: UIViewController {
             operandStack.append(displayValue!)
         }
 
-        println("operandStack = \(operandStack)")
+        print("operandStack = \(operandStack)")
     }
     
     @IBAction func operate(sender: UIButton) {
@@ -122,8 +122,8 @@ class ViewController: UIViewController {
     
     @IBAction func backspace() {
         if userIsInTheMiddleOfTypingANumber {
-            if countElements(display.text!) > 1 {
-                display.text! = dropLast(display.text!)
+            if display.text!.characters.count > 1 {
+                display.text! = display.text!.characters.dropLast()
             } else {
                 display.text! = "0"
                 userIsInTheMiddleOfTypingANumber = false
@@ -149,7 +149,7 @@ class ViewController: UIViewController {
     
     
     //for binary operations
-    func performOperation(operation: (Double, Double) ->Double) {
+    private func performOperation(operation: (Double, Double) -> Double) {
         if operandStack.count >= 2 {
             displayValue = operation(operandStack.removeLast(), operandStack.removeLast())
             enter()
@@ -157,7 +157,7 @@ class ViewController: UIViewController {
     }
     
     //for unary operations
-    func performOperation(operation: (Double) ->Double) {
+    private func performOperation(operation: (Double) -> Double) {
         if operandStack.count >= 1 {
             displayValue = operation(operandStack.removeLast())
             enter()
@@ -165,7 +165,7 @@ class ViewController: UIViewController {
     }
     
     //for 0-operand operations (eg. constants)
-    func performOperation(constant: Double) {
+    private func performOperation(constant: Double) {
         operandStack.append(M_PI)
         displayValue = M_PI
     }
