@@ -15,7 +15,8 @@ class ViewController: UIViewController {
     
     var userIsInTheMiddleOfTypingANumber = false
     
-    var operandStack = Array<Double>()
+    //the model
+    var brain = CalculatorBrain()
     
     var displayValue : Double? {
         get {
@@ -34,10 +35,9 @@ class ViewController: UIViewController {
             if newValue == nil {
                 display.text = ""
             } else {
-                println("newval not nil")
+                print("newval not nil")
                 display.text! = "\(newValue!)"
                 userIsInTheMiddleOfTypingANumber = false
-
             }
         }
         
@@ -47,7 +47,6 @@ class ViewController: UIViewController {
     //appends digits and/or the decimal separator
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
-        
         
         if (digit != ".") || (digit == "." && display.text!.rangeOfString(".") == nil) {
             //if the "digit" is actually a decimal separator, ^ make sure the number doesn't already have one before appending it
@@ -65,46 +64,36 @@ class ViewController: UIViewController {
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
         
-        if (displayValue != nil){
-            operandStack.append(displayValue!)
+        if let val = displayValue {
+            if let result = brain.pushOperand(val) {
+                displayValue = result
+            } else {
+                displayValue = 0
+            }
         }
 
-        println("operandStack = \(operandStack)")
+        
+        
     }
     
     @IBAction func operate(sender: UIButton) {
-        let operation = sender.currentTitle!
+        
         if !(history.text!.hasSuffix("= ")) {
             history.text! += "= "
         }
-        
         
         //if user was typing a number, he isn't now - because he pressed an operation button
         if (userIsInTheMiddleOfTypingANumber) {
             enter()
         }
         
-        
-        switch operation {
-        
-        //binary operations
-        case "×": performOperation {$0 * $1}
-        case "÷": performOperation {$1 / $0}
-        case "+": performOperation {$0 + $1}
-        case "−": performOperation {$1 - $0}
+        if let operation = sender.currentTitle {
+            if let result = brain.performOperation(operation) {
+                displayValue = result
+            } else {
+                displayValue = 0
+            }
             
-        //unary operations
-        case "sin": performOperation {sin($0)}
-        case "cos": performOperation {cos($0)}
-        case "√": performOperation {sqrt($0)}
-        case "+/−": performOperation() {-$0}
-            
-            
-        //0-operand operations (eg. constants)
-        case "π": performOperation(M_PI)
-            
-            
-        default: break
         }
         
     }
@@ -116,21 +105,20 @@ class ViewController: UIViewController {
     @IBAction func clearAll() {
         history.text = " "
         display.text = "0"
-        operandStack.removeAll(keepCapacity: false)
+        brain.clearOpStack() 
         userIsInTheMiddleOfTypingANumber = false
     }
     
     @IBAction func backspace() {
         if userIsInTheMiddleOfTypingANumber {
-            if countElements(display.text!) > 1 {
-                display.text! = dropLast(display.text!)
+            if display.text!.characters.count > 1 {
+                display.text! = String(display.text!.characters.dropLast(1))
             } else {
                 display.text! = "0"
                 userIsInTheMiddleOfTypingANumber = false
             }
         }
     }
-    
     
     @IBAction func changeSign(sender: UIButton) {
         if userIsInTheMiddleOfTypingANumber {
@@ -144,30 +132,6 @@ class ViewController: UIViewController {
             operate(sender)
         }
         
-    }
-    
-    
-    
-    //for binary operations
-    func performOperation(operation: (Double, Double) ->Double) {
-        if operandStack.count >= 2 {
-            displayValue = operation(operandStack.removeLast(), operandStack.removeLast())
-            enter()
-        }
-    }
-    
-    //for unary operations
-    func performOperation(operation: (Double) ->Double) {
-        if operandStack.count >= 1 {
-            displayValue = operation(operandStack.removeLast())
-            enter()
-        }
-    }
-    
-    //for 0-operand operations (eg. constants)
-    func performOperation(constant: Double) {
-        operandStack.append(M_PI)
-        displayValue = M_PI
     }
     
 }
