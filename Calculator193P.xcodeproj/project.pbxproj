@@ -81,7 +81,6 @@
 			children = (
 				9FAAF81A1AD0880B0034247B /* CalculatorBrain.swift */,
 				9F7E45211ACDDCB100369B31 /* ViewController.swift */,
-				9FFC9E421CA9D7AF0050237B /* New Group */,
 				9F7E45231ACDDCB100369B31 /* Main.storyboard */,
 				9F7E451D1ACDDCB100369B31 /* Supporting Files */,
 			);
@@ -114,13 +113,6 @@
 				9F7E45341ACDDCB100369B31 /* Info.plist */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		9FFC9E421CA9D7AF0050237B /* New Group */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "New Group";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

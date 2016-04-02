@@ -22,20 +22,14 @@ class ViewController: UIViewController {
         get {
             let formatter = NSNumberFormatter()
             formatter.decimalSeparator = "."
-            
-            let numberFromString = formatter.numberFromString(display.text!)
-            if numberFromString == nil {
-                return nil
-            } else {
-                return numberFromString!.doubleValue
-            }
+            //this will return nil if the displayed text cannot be interpreted as a number
+            return formatter.numberFromString(display.text!)?.doubleValue
         }
         
         set {
             if newValue == nil {
                 display.text = ""
             } else {
-                print("newval not nil")
                 display.text! = "\(newValue!)"
                 userIsInTheMiddleOfTypingANumber = false
             }
