@@ -14,7 +14,7 @@ class CalculatorBrain
     private enum Op : CustomStringConvertible {
         case Operand(Double)
         case ConstantOperation(String, Double)
-        case VariableOperation(String, Double?) //verify if the distinction between the two is necessary
+        case VariableOperation(String) //verify if the distinction between the two is necessary
         case UnaryOperation(String, Double -> Double)
         case BinaryOperation(String, (Double, Double) -> Double)
 
@@ -26,7 +26,7 @@ class CalculatorBrain
                     return "\(number)"
                 case .ConstantOperation(let symbol, _):
                     return symbol
-                case .VariableOperation(let symbol, _):
+                case .VariableOperation(let symbol):
                     return symbol
                 case .UnaryOperation(let symbol, _):
                     return symbol
@@ -84,10 +84,9 @@ class CalculatorBrain
     
     func pushOperand(symbol: String) -> Double?{
         //pushes a “variable” onto your brain’s internal stack (e.g. pushOperand(“x”) would push a variable named x)
-        //the second lets users of the CalculatorBrain set the value for any variable they wish (e.g. brain.variableValues[“x”] = 35.0).
+        //brain.variableValues lets users of the CalculatorBrain set the value for any variable they wish (e.g. brain.variableValues[“x”] = 35.0).
         //pushOperand should return the result of evaluate() after having pushed the variable (just like the other pushOperand
-        variableValues[symbol] = nil
-        opStack.append(Op.VariableOperation(symbol, nil))
+        opStack.append(Op.VariableOperation(symbol))
         return evaluate()
     }
     
@@ -120,10 +119,10 @@ class CalculatorBrain
                 
             case .Operand(let operand): //if it's an operand - great, just return it, no recursive call
                 return (operand, remainingOps)
-                
             case .ConstantOperation(_, let constant): //similarly in a case of a constant
                 return (constant, remainingOps)
-                
+            case .VariableOperation(let variable): //if it's a var, return it's value if you have it, return nil if you don't
+                return (variableValues[variable], remainingOps)
             case .UnaryOperation(_, let operation): // if it's a unary operation - we need one operand
                 let operandEvaluation = evaluate(remainingOps)
                 if let operand = operandEvaluation.result {
@@ -138,7 +137,7 @@ class CalculatorBrain
                         return (operation(operand1,operand2), operand2Evaluation.remainingOps)
                     }
                 }
-                
+            
     
             }
             
