@@ -59,6 +59,25 @@ class CalculatorBrain
 
     }
     
+    var program: AnyObject {
+        get {
+            return opStack.map {$0.description}
+        }
+        set {
+            if let opSymbols = newValue as? [String] {
+                var newSymbols = [Op]()
+                for opSymbol in opSymbols {
+                    if let op = knownOps[opSymbol] {
+                        newSymbols.append(op)
+                    } else if let operand = NSNumberFormatter().numberFromString(opSymbol)?.doubleValue {
+                        newSymbols.append(Op.Operand(operand))
+                    }
+                }
+                opStack = newSymbols
+            }
+        }
+    }
+    
     
     func pushOperand(operand: Double) -> Double? {
         opStack.append(Op.Operand(operand))
