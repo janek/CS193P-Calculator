@@ -28,7 +28,7 @@ class ViewController: UIViewController {
         
         set {
             if newValue == nil {
-                display.text = ""
+                display.text = " "
             } else {
                 display.text! = "\(newValue!)"
                 userIsInTheMiddleOfTypingANumber = false
@@ -62,7 +62,7 @@ class ViewController: UIViewController {
             if let result = brain.pushOperand(val) {
                 displayValue = result
             } else {
-                displayValue = 0
+                displayValue = nil
             }
         }
 
@@ -85,7 +85,7 @@ class ViewController: UIViewController {
             if let result = brain.performOperation(operation) {
                 displayValue = result
             } else {
-                displayValue = 0
+                displayValue = nil
             }
             
         }

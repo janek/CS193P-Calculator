@@ -9,7 +9,7 @@
 import Foundation
 
 
-class CalculatorBrain
+class CalculatorBrain: CustomStringConvertible
 {
     private enum Op : CustomStringConvertible {
         case Operand(Double)
@@ -34,6 +34,28 @@ class CalculatorBrain
                     return symbol
                 }
             }
+        }
+    }
+    
+    var description: String {
+        get {
+            //start with the full stack and save it
+            //evaluate in a loop
+            //each complete expression should be followed by a comma
+            var stackToDescribe = opStack
+            var descriptionHistory = [String]()
+            
+            while stackToDescribe.count > 0 {
+                let (operationDescription, remainingOpStack) = describe(stackToDescribe)
+                if let desc = operationDescription {
+                    descriptionHistory.append(desc)
+                } else {
+                    descriptionHistory.append("Err!")
+                }
+                stackToDescribe = remainingOpStack
+            }
+            
+            return descriptionHistory.reverse().joinWithSeparator(", ")
         }
     }
     
@@ -82,16 +104,13 @@ class CalculatorBrain
         }
     }
     
-    func pushOperand(symbol: String) -> Double?{
-        //pushes a “variable” onto your brain’s internal stack (e.g. pushOperand(“x”) would push a variable named x)
-        //brain.variableValues lets users of the CalculatorBrain set the value for any variable they wish (e.g. brain.variableValues[“x”] = 35.0).
-        //pushOperand should return the result of evaluate() after having pushed the variable (just like the other pushOperand
-        opStack.append(Op.VariableOperation(symbol))
+    func pushOperand(operand: Double) -> Double? {
+        opStack.append(Op.Operand(operand))
         return evaluate()
     }
     
-    func pushOperand(operand: Double) -> Double? {
-        opStack.append(Op.Operand(operand))
+    func pushOperand(symbol: String) -> Double?{ //for variables
+        opStack.append(Op.VariableOperation(symbol))
         return evaluate()
     }
     
@@ -104,6 +123,49 @@ class CalculatorBrain
     
     func clearOpStack() {
         opStack.removeAll()
+//        descriptionHistory.removeAll()
+    }
+    
+    private func describe(ops: [Op]) -> (description: String?, remainingOps: [Op]) {
+        if !ops.isEmpty {
+            //the argument ops is immutable (pass-by-value, implicit let); so we need to get a new var to operate on
+            var remainingOps = ops
+            //take an op from the top of the stack
+            let op = remainingOps.removeLast()
+            //see what it is:
+            switch op {
+                
+            case .Operand(let operand): //if it's an operand, return it as string
+                return ("\(operand)", remainingOps)
+            case .ConstantOperation(let symbol, _): //similarly in a case of a constant
+                return (symbol, remainingOps)
+            case .VariableOperation(let symbol): //if it's a var, return the symbol
+                return (symbol, remainingOps)
+            case .UnaryOperation(let symbol, _): // if it's a unary operation - use one next operand and return them together, e.g cos(10)
+                let nextOperand = describe(remainingOps)
+                let operand = nextOperand.description ?? "?" //if an operand is misssing, replace with ?
+                let desc = "\(symbol)(\(operand))"
+
+                return (desc, nextOperand.remainingOps)
+            case .BinaryOperation(let symbol, _): // if it's a binary operation - we need two operands. we use infix, e.g. 5 + 3
+                let operand1Evaluation = describe(remainingOps)
+                //TODO: refactor below to be clearer and more concise, use ?? syntax and factor out common parts
+                if let operand1 = operand1Evaluation.description {
+                    let operand2Evaluation = describe(operand1Evaluation.remainingOps)
+                    if let operand2 = operand2Evaluation.description {
+                        return (operand2+symbol+operand1, operand2Evaluation.remainingOps)
+                    } else {
+                        return ("?"+symbol+operand1, operand2Evaluation.remainingOps)
+                    }
+                } else {
+                    return ("?"+symbol+"?", operand1Evaluation.remainingOps)
+                }
+            }
+            
+        }
+        
+        //if something went wrong along the way, the result should be nil and the remaining ops should be the ops we started with
+        return (nil, ops)
     }
     
     //recursive evaluate function
@@ -124,11 +186,10 @@ class CalculatorBrain
             case .VariableOperation(let variable): //if it's a var, return it's value if you have it, return nil if you don't
                 return (variableValues[variable], remainingOps)
             case .UnaryOperation(_, let operation): // if it's a unary operation - we need one operand
-                let operandEvaluation = evaluate(remainingOps)
-                if let operand = operandEvaluation.result {
-                    return (operation(operand), operandEvaluation.remainingOps)
+                let nextOperandEvaluation = evaluate(remainingOps)
+                if let operand = nextOperandEvaluation.result {
+                    return (operation(operand), nextOperandEvaluation.remainingOps)
                 }
-            
             case .BinaryOperation(_, let operation): // if it's a binary operation - we need two operands
                 let operand1Evaluation = evaluate(remainingOps)
                 if let operand1 = operand1Evaluation.result {
@@ -137,8 +198,6 @@ class CalculatorBrain
                         return (operation(operand1,operand2), operand2Evaluation.remainingOps)
                     }
                 }
-            
-    
             }
             
         }
@@ -150,12 +209,10 @@ class CalculatorBrain
     
     func evaluate() -> Double? {
         let (result, remainder) = evaluate(opStack)
-        print("\(opStack) = \(result) with \(remainder) left over")
+        print("\(opStack) = \(result) with eval remainder \(remainder) left over. Full stack \(opStack)")
+        print("Desc: \(description)")
         return result
     }
-    
 
-    
-    
     
 }
