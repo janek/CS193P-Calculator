@@ -123,7 +123,6 @@ class CalculatorBrain: CustomStringConvertible
     
     func clearOpStack() {
         opStack.removeAll()
-//        descriptionHistory.removeAll()
     }
     
     private func describe(ops: [Op]) -> (description: String?, remainingOps: [Op]) {
@@ -211,6 +210,7 @@ class CalculatorBrain: CustomStringConvertible
         let (result, remainder) = evaluate(opStack)
         print("\(opStack) = \(result) with eval remainder \(remainder) left over. Full stack \(opStack)")
         print("Desc: \(description)")
+        
         return result
     }
 

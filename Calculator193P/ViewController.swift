@@ -72,10 +72,6 @@ class ViewController: UIViewController {
     
     @IBAction func operate(sender: UIButton) {
         
-        if !(history.text!.hasSuffix("= ")) {
-            history.text! += "= "
-        }
-        
         //if user was typing a number, he isn't now - because he pressed an operation button
         if (userIsInTheMiddleOfTypingANumber) {
             enter()
@@ -87,13 +83,20 @@ class ViewController: UIViewController {
             } else {
                 displayValue = nil
             }
-            
         }
+        
+        
+        history.text! = brain.description + "="
+        
+//        if !(history.text!.hasSuffix("= ")) {
+//            history.text! += "= "
+//        }
+
         
     }
     
     @IBAction func buttonPressed(sender: UIButton) {
-        history.text! += sender.currentTitle! + " "
+//        history.text! += sender.currentTitle! + " "
     }
     
     @IBAction func clearAll() {
