@@ -9,14 +9,17 @@
 import Foundation
 
 
+
 class CalculatorBrain: CustomStringConvertible
 {
+    
+    
     private enum Op : CustomStringConvertible {
         case Operand(Double)
         case ConstantOperation(String, Double)
         case VariableOperation(String) //verify if the distinction between the two is necessary
-        case UnaryOperation(String, Double -> Double)
-        case BinaryOperation(String, (Double, Double) -> Double)
+        case UnaryOperation(String, Double -> Double, (Double -> String?)?)
+        case BinaryOperation(String, (Double, Double) -> Double, ((Double, Double) -> String?)?)
 
         
         var description : String {
@@ -28,9 +31,9 @@ class CalculatorBrain: CustomStringConvertible
                     return symbol
                 case .VariableOperation(let symbol):
                     return symbol
-                case .UnaryOperation(let symbol, _):
+                case .UnaryOperation(let symbol, _, _):
                     return symbol
-                case .BinaryOperation(let symbol, _):
+                case .BinaryOperation(let symbol, _, _):
                     return symbol
                 }
             }
@@ -48,7 +51,7 @@ class CalculatorBrain: CustomStringConvertible
                     return 0
                 case .UnaryOperation:
                     return 0
-                case .BinaryOperation(let symbol, _):
+                case .BinaryOperation(let symbol, _ , _):
                     if symbol == "+" || symbol == "-" {
                         return 2
                     } else if symbol == "*" || symbol == "÷" {
@@ -100,15 +103,15 @@ class CalculatorBrain: CustomStringConvertible
             knownOps[op.description] = op
         }
         
-        learnOp(Op.BinaryOperation("+") { $0 + $1 })
-        learnOp(Op.BinaryOperation("-") { $1 - $0 })
-        learnOp(Op.BinaryOperation("×") { $0 * $1 })
-        learnOp(Op.BinaryOperation("÷") { $1 / $0 })
+        learnOp(Op.BinaryOperation("+",{ $0 + $1 },nil))
+        learnOp(Op.BinaryOperation("-", { $1 - $0 },nil))
+        learnOp(Op.BinaryOperation("×", { $0 * $1 },nil))
+        learnOp(Op.BinaryOperation("÷", { $1 / $0 },{numerator, denominator in if numerator == 0 {return "Division by zer0!"} else {return nil} }))
         
-        learnOp(Op.UnaryOperation("sin") { sin($0) })
-        learnOp(Op.UnaryOperation("cos") { cos($0) })
-        learnOp(Op.UnaryOperation("√")   { sqrt($0) })
-        learnOp(Op.UnaryOperation("+/−") { -$0 })
+        learnOp(Op.UnaryOperation("sin", { sin($0) },nil))
+        learnOp(Op.UnaryOperation("cos", { cos($0) },nil))
+        learnOp(Op.UnaryOperation("√",   { sqrt($0) },{if $0 < 0 {return "Square of negative!"} else {return nil} }))
+        learnOp(Op.UnaryOperation("+/−", { -$0 }, nil))
         
         learnOp(Op.ConstantOperation("π", M_PI))
 
@@ -139,9 +142,7 @@ class CalculatorBrain: CustomStringConvertible
     }
     
     func pushOperand(symbol: String) -> Double?{ //for variables
-//        if variableValues[symbol] != nil {
-            opStack.append(Op.VariableOperation(symbol))
-//        }
+        opStack.append(Op.VariableOperation(symbol))
         return evaluate()
     }
     
@@ -175,13 +176,13 @@ class CalculatorBrain: CustomStringConvertible
                 return (symbol, remainingOps)
             case .VariableOperation(let symbol): //if it's a var, return the symbol
                 return (symbol, remainingOps)
-            case .UnaryOperation(let symbol, _): // if it's a unary operation - use one next operand and return them together, e.g cos(10)
+            case .UnaryOperation(let symbol, _, _): // if it's a unary operation - use one next operand and return them together, e.g cos(10)
                 let nextOperand = describe(remainingOps)
                 let operand = nextOperand.description ?? "?" //if an operand is misssing, replace with ?
                 let desc = "\(symbol)(\(operand))" // e.g. cos(10)
 
                 return (desc, nextOperand.remainingOps)
-            case .BinaryOperation(let symbol, _): // if it's a binary operation - we need two operands. we use infix, e.g. 5 + 3
+            case .BinaryOperation(let symbol, _, _): // if it's a binary operation - we need two operands. we use infix, e.g. 5 + 3
 //                var opsCopy = remainingOps
                 let operand1Evaluation = describe(remainingOps)
                 
@@ -215,7 +216,45 @@ class CalculatorBrain: CustomStringConvertible
     }
     
     //recursive evaluate function
-    private func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]) {
+//    private func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]) {
+//        
+//        if !ops.isEmpty {
+//            //the argument ops is immutable (pass-by-value, implicit let); so we need to get a new var to operate on
+//            var remainingOps = ops
+//            //take an op from the top of the stack
+//            let op = remainingOps.removeLast()
+//            //see what it is:
+//            switch op {
+//                
+//            case .Operand(let operand): //if it's an operand - great, just return it, no recursive call
+//                return (operand, remainingOps)
+//            case .ConstantOperation(_, let constant): //similarly in a case of a constant
+//                return (constant, remainingOps)
+//            case .VariableOperation(let variable): //if it's a var, return it's value if you have it, return nil if you don't
+//                return (variableValues[variable], remainingOps)
+//            case .UnaryOperation(_, let operation, _): // if it's a unary operation - we need one operand
+//                let nextOperandEvaluation = evaluate(remainingOps)
+//                if let operand = nextOperandEvaluation.result {
+//                    return (operation(operand), nextOperandEvaluation.remainingOps)
+//                }
+//            case .BinaryOperation(_, let operation, _): // if it's a binary operation - we need two operands
+//                let operand1Evaluation = evaluate(remainingOps)
+//                if let operand1 = operand1Evaluation.result {
+//                    let operand2Evaluation = evaluate(operand1Evaluation.remainingOps)
+//                    if let operand2 = operand2Evaluation.result {
+//                        return (operation(operand1,operand2), operand2Evaluation.remainingOps)
+//                    }
+//                }
+//            }
+//            
+//        }
+//        
+//        //if something went wrong along the way, the result should be nil and the remaining ops should be the ops we started with
+//        return (nil, ops)
+//    }
+    
+    //recursive evaluate function
+    private func evaluate(ops: [Op]) -> (result: Double?, error: String?, remainingOps: [Op]) {
         
         if !ops.isEmpty {
             //the argument ops is immutable (pass-by-value, implicit let); so we need to get a new var to operate on
@@ -226,40 +265,64 @@ class CalculatorBrain: CustomStringConvertible
             switch op {
                 
             case .Operand(let operand): //if it's an operand - great, just return it, no recursive call
-                return (operand, remainingOps)
+                return (operand, nil, remainingOps)
             case .ConstantOperation(_, let constant): //similarly in a case of a constant
-                return (constant, remainingOps)
+                return (constant, nil, remainingOps)
             case .VariableOperation(let variable): //if it's a var, return it's value if you have it, return nil if you don't
-                return (variableValues[variable], remainingOps)
-            case .UnaryOperation(_, let operation): // if it's a unary operation - we need one operand
-                let nextOperandEvaluation = evaluate(remainingOps)
-                if let operand = nextOperandEvaluation.result {
-                    return (operation(operand), nextOperandEvaluation.remainingOps)
+                if let varVal = variableValues[variable] {
+                    return (varVal, nil, remainingOps)
+                } else {
+                    return (nil, "Undefined var", remainingOps)
                 }
-            case .BinaryOperation(_, let operation): // if it's a binary operation - we need two operands
+            case .UnaryOperation(_, let operation, let errorTest): // if it's a unary operation - we need one operand
+                let nextOperandEvaluation = evaluate(remainingOps)
+                if let err = nextOperandEvaluation.error {
+                    return (nil, err, nextOperandEvaluation.remainingOps)
+                }
+                
+                if let operand = nextOperandEvaluation.result {
+                    if let err = errorTest?(operand) {
+                        return (nil, err, nextOperandEvaluation.remainingOps)
+                    }
+                    return (operation(operand), nil, nextOperandEvaluation.remainingOps)
+                } else {
+                    return (nil, "Missing operand", nextOperandEvaluation.remainingOps)
+                }
+            case .BinaryOperation(_, let operation, let errorTest): // if it's a binary operation - we need two operands
                 let operand1Evaluation = evaluate(remainingOps)
                 if let operand1 = operand1Evaluation.result {
                     let operand2Evaluation = evaluate(operand1Evaluation.remainingOps)
                     if let operand2 = operand2Evaluation.result {
-                        return (operation(operand1,operand2), operand2Evaluation.remainingOps)
+                        if let err = errorTest?(operand1,operand2){
+                            return (nil, err, operand2Evaluation.remainingOps)
+                        }
+                        return (operation(operand1,operand2), nil, operand2Evaluation.remainingOps)
+                    } else {
+                        return (nil, "Missing operand", operand2Evaluation.remainingOps)
                     }
+                } else {
+                    return (nil, "Missing operand", operand1Evaluation.remainingOps)
                 }
             }
             
         }
         
         //if something went wrong along the way, the result should be nil and the remaining ops should be the ops we started with
-        return (nil, ops)
+        return (nil, nil ,ops)
     }
     
-    
     func evaluate() -> Double? {
-        let (result, remainder) = evaluate(opStack)
-        print("\(opStack) = \(result) with eval remainder \(remainder) left over. Full stack \(opStack)")
+        let (result, error, remainder) = evaluate(opStack)
+        print("\(opStack) = \(result) with eval remainder \(remainder) left over. Error is \(error) Full stack \(opStack)")
         print("Desc: \(description)")
         
         return result
     }
-
     
+    func evaluateAndReportErrors() -> (Double?, String?){
+        let (result, error, remainder) = evaluate(opStack)
+        print("In Report. \(opStack) = \(result) with eval remainder \(remainder) left over. Error is \(error) Full stack \(opStack)")
+        print("Desc: \(description)")
+        return (result, error)
+    }
 }

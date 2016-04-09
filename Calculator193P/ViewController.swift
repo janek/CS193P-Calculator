@@ -27,9 +27,7 @@ class ViewController: UIViewController {
         }
         
         set {
-            if newValue == nil {
-                display.text = " "
-            } else {
+            if newValue != nil {
                 display.text! = "\(newValue!)"
                 userIsInTheMiddleOfTypingANumber = false
             }
@@ -37,6 +35,22 @@ class ViewController: UIViewController {
         
     }
     
+    //
+    var displayResult : (Double?, String?) {
+        get {
+            return (displayValue, nil)
+        }
+        set {
+            //set DisplayValue or set the text directly
+            print("1 is\(newValue.0) 2 is \(newValue.1)")
+            if let error = newValue.1 {
+                displayValue = nil
+                display.text = error
+            } else {
+                displayValue = newValue.0
+            }
+        }
+    }
     
     //appends digits and/or the decimal separator
     @IBAction func appendDigit(sender: UIButton) {
@@ -58,11 +72,14 @@ class ViewController: UIViewController {
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
         
+        //if there is a recognizable value on the display
         if let val = displayValue {
-            if let result = brain.pushOperand(val) {
-                displayValue = result
+            if brain.pushOperand(val) != nil {
+                displayResult = brain.evaluateAndReportErrors()
+//                displayValue = result
             } else {
                 displayValue = nil
+                
             }
         }
     }
@@ -70,7 +87,8 @@ class ViewController: UIViewController {
     @IBAction func saveVariable(sender: UIButton) {
         brain.variableValues["ℳ"] = displayValue
         userIsInTheMiddleOfTypingANumber = false
-        displayValue = brain.evaluate()
+//        displayValue = brain.evaluate()
+        displayResult = brain.evaluateAndReportErrors()
     }
     
     @IBAction func pushVariable(sender: UIButton) {
@@ -78,7 +96,8 @@ class ViewController: UIViewController {
         if (userIsInTheMiddleOfTypingANumber) {
             enter()
         }
-        displayValue = brain.pushOperand("ℳ")
+        brain.pushOperand("ℳ")
+        displayResult = brain.evaluateAndReportErrors()
     }
     
     @IBAction func operate(sender: UIButton) {
@@ -89,13 +108,15 @@ class ViewController: UIViewController {
         }
         
         if let operation = sender.currentTitle {
-            if let result = brain.performOperation(operation) {
-                displayValue = result
-            } else {
-                displayValue = nil
-            }
+//            if brain.performOperation(operation) != nil {
+////                displayValue = result
+//                displayResult = brain.evaluateAndReportErrors()
+//            } else {
+//                displayValue = nil
+//            }
+            brain.performOperation(operation)
+            displayResult = brain.evaluateAndReportErrors()
         }
-        
         
         history.text! = brain.description + "="
     }
@@ -111,6 +132,7 @@ class ViewController: UIViewController {
     
     @IBAction func undo() {
         if userIsInTheMiddleOfTypingANumber {
+            //work as "backspace"
             if display.text!.characters.count > 1 {
                 display.text! = String(display.text!.characters.dropLast(1))
             } else {
@@ -122,7 +144,10 @@ class ViewController: UIViewController {
             //either he just opened the app or he just performed an operation
             //undo the last operation that was done in calculatorBrain
             brain.undoOp()
+            
             displayValue = brain.evaluate()
+            displayResult = brain.evaluateAndReportErrors()
+            
             history.text! = brain.description + "="
         }
     }
