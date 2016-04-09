@@ -109,7 +109,7 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTypingANumber = false
     }
     
-    @IBAction func backspace() {
+    @IBAction func undo() {
         if userIsInTheMiddleOfTypingANumber {
             if display.text!.characters.count > 1 {
                 display.text! = String(display.text!.characters.dropLast(1))
@@ -117,6 +117,13 @@ class ViewController: UIViewController {
                 display.text! = "0"
                 userIsInTheMiddleOfTypingANumber = false
             }
+        } else {
+            //the user is not in the middle of typing
+            //either he just opened the app or he just performed an operation
+            //undo the last operation that was done in calculatorBrain
+            brain.undoOp()
+            displayValue = brain.evaluate()
+            history.text! = brain.description + "="
         }
     }
     

@@ -123,6 +123,10 @@ class CalculatorBrain: CustomStringConvertible
         return evaluate()
     }
     
+    func undoOp(){
+        opStack.removeLast()
+    }
+    
     func clearOpStack() {
         opStack.removeAll()
     }
