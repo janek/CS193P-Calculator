@@ -35,6 +35,33 @@ class CalculatorBrain: CustomStringConvertible
                 }
             }
         }
+        
+        var precedence : Int {
+            get {
+                switch self {
+                    //TODO: if they really all should return 0, combine into 1 line
+                case .Operand:
+                    return 0
+                case .ConstantOperation:
+                    return 0
+                case .VariableOperation:
+                    return 0
+                case .UnaryOperation:
+                    return 0
+                case .BinaryOperation(let symbol, _):
+                    if symbol == "+" || symbol == "-" {
+                        return 2
+                    } else if symbol == "*" || symbol == "÷" {
+                        return 1
+                    } else {
+                        //unknown binary operation
+                       return 0
+                    }
+                    
+                }
+            }
+        }
+        
     }
     
     var description: String {
@@ -54,15 +81,17 @@ class CalculatorBrain: CustomStringConvertible
                 }
                 stackToDescribe = remainingOpStack
             }
-            
             return descriptionHistory.reverse().joinWithSeparator(", ")
         }
     }
     
     
+    
+    
     private var opStack = [Op]()
     private var knownOps = [String:Op]()
     var variableValues = [String:Double]()
+    private var precedence : Int = 0
     
     init() {
         
@@ -149,15 +178,27 @@ class CalculatorBrain: CustomStringConvertible
             case .UnaryOperation(let symbol, _): // if it's a unary operation - use one next operand and return them together, e.g cos(10)
                 let nextOperand = describe(remainingOps)
                 let operand = nextOperand.description ?? "?" //if an operand is misssing, replace with ?
-                let desc = "\(symbol)(\(operand))"
+                let desc = "\(symbol)(\(operand))" // e.g. cos(10)
 
                 return (desc, nextOperand.remainingOps)
             case .BinaryOperation(let symbol, _): // if it's a binary operation - we need two operands. we use infix, e.g. 5 + 3
+//                var opsCopy = remainingOps
                 let operand1Evaluation = describe(remainingOps)
+                
+                let op1 = remainingOps.last
+                let op2 : Op? = remainingOps.count >= 2 ? remainingOps[remainingOps.count-2] : nil
+                
                 //TODO: refactor below to be clearer and more concise, use ?? syntax and factor out common parts
-                if let operand1 = operand1Evaluation.description {
+                
+                if var operand1 = operand1Evaluation.description {
+                    if op1 != nil && op.precedence < op1!.precedence {
+                        operand1 = "(\(operand1))"
+                    }
                     let operand2Evaluation = describe(operand1Evaluation.remainingOps)
-                    if let operand2 = operand2Evaluation.description {
+                    if var operand2 = operand2Evaluation.description {
+                        if op2 != nil && op.precedence < op2!.precedence {
+                            operand2 = "(\(operand2))"
+                        }
                         return (operand2+symbol+operand1, operand2Evaluation.remainingOps)
                     } else {
                         return ("?"+symbol+operand1, operand2Evaluation.remainingOps)
