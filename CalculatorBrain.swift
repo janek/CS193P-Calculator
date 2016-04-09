@@ -62,7 +62,7 @@ class CalculatorBrain: CustomStringConvertible
     
     private var opStack = [Op]()
     private var knownOps = [String:Op]()
-    private var variableValues = [String:Double]()
+    var variableValues = [String:Double]()
     
     init() {
         
@@ -110,7 +110,9 @@ class CalculatorBrain: CustomStringConvertible
     }
     
     func pushOperand(symbol: String) -> Double?{ //for variables
-        opStack.append(Op.VariableOperation(symbol))
+//        if variableValues[symbol] != nil {
+            opStack.append(Op.VariableOperation(symbol))
+//        }
         return evaluate()
     }
     

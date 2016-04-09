@@ -65,9 +65,20 @@ class ViewController: UIViewController {
                 displayValue = nil
             }
         }
-
-        
-        
+    }
+    
+    @IBAction func saveVariable(sender: UIButton) {
+        brain.variableValues["ℳ"] = displayValue
+        userIsInTheMiddleOfTypingANumber = false
+        displayValue = brain.evaluate()
+    }
+    
+    @IBAction func pushVariable(sender: UIButton) {
+        //if user was typing a number, he isn't now - because he pressed an operation button
+        if (userIsInTheMiddleOfTypingANumber) {
+            enter()
+        }
+        displayValue = brain.pushOperand("ℳ")
     }
     
     @IBAction func operate(sender: UIButton) {
@@ -87,22 +98,14 @@ class ViewController: UIViewController {
         
         
         history.text! = brain.description + "="
-        
-//        if !(history.text!.hasSuffix("= ")) {
-//            history.text! += "= "
-//        }
-
-        
     }
     
-    @IBAction func buttonPressed(sender: UIButton) {
-//        history.text! += sender.currentTitle! + " "
-    }
     
     @IBAction func clearAll() {
         history.text = " "
         display.text = "0"
-        brain.clearOpStack() 
+        brain.clearOpStack()
+        brain.variableValues.removeAll()
         userIsInTheMiddleOfTypingANumber = false
     }
     
